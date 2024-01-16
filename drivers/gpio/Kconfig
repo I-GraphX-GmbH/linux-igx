@@ -1613,6 +1613,13 @@ config GPIO_74X164
 	  shift registers. This driver can be used to provide access
 	  to more gpio outputs.
 
+config GPIO_MAX14916
+        tristate "Maxim MAX14916 GPIO expander with diagnostics"
+        help
+          GPIO Driver for SPI controlled MAX14916 Octal High-Side Switch
+          with diagnostics.
+          Each IO port on this chip has a fixed role of Output.
+
 config GPIO_MAX3191X
 	tristate "Maxim MAX3191x industrial serializer"
 	select CRC8

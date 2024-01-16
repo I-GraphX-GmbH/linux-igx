@@ -1,0 +1,329 @@
+/*
+ * Copyright (C) 2023 I-GraphX GmbH
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ */
+
+/dts-v1/;
+
+#define CONFIG_PICOCOREBBDSI_BOARD_REVISION 140
+
+#define CONFIG_PICOCOREMX8MP_ETH_A
+
+#define CONFIG_PICOCOREMX8MP_WLAN
+#define CONFIG_PICOCOREMX8MP_WLAN_MARVELL_DRV
+
+#define CONFIG_PICOCOREMX8MP_USB_HOST
+
+#define CONFIG_PICOCOREMX8MP_EEPROM
+
+#define CONFIG_PICOCOREMX8MP_CAN_A
+#define CONFIG_PICOCOREMX8MP_CAN_B
+
+#define CONFIG_PICOCOREMX8MP_I2C_B
+#define CONFIG_PICOCOREMX8MP_I2C_E
+
+#define CONFIG_PICOCOREMX8MP_PWM_A
+#define CONFIG_PICOCOREMX8MP_BL_CTRL
+
+#define CONFIG_PICOCOREMX8MP_UART_A
+#define CONFIG_PICOCOREMX8MP_UART_A_RTSCTS
+#define CONFIG_PICOCOREMX8MP_UART_B
+#define CONFIG_PICOCOREMX8MP_UART_B_RTSCTS
+
+#define CONFIG_PICOCOREMX8MP_UART_C
+#define CONFIG_PICOCOREMX8MP_UART_D
+
+#define CONFIG_PICOCOREMX8MP_SPI_A
+
+#define CONFIG_PICOCOREMX8MP_SD_A
+#define CONFIG_PICOCOREMX8MP_SD_A_CD
+
+#define CONFIG_PICOCOREMX8MP_EXT_RTC
+
+
+#include "../F+S/picocoremx8mp.dtsi"
+
+/ {
+	model = "F&S PicoCoreMX8MP";
+	reg_wlan_pdn: regulator-usdhc2-wlan {
+		compatible = "regulator-fixed";
+		regulator-name = "WLAN_RESET";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		gpio = <&gpio4 18 GPIO_ACTIVE_LOW>;
+		off-on-delay-us = <1000>;
+		enable-active-high;
+	};
+
+	regulator-usb1-vbus {
+		compatible = "regulator-fixed";
+		regulator-name = "usb1_host_pwr";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_usb1_pwr>;
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		gpio = <&gpio1 12 GPIO_ACTIVE_LOW>;
+		regulator-always-on;
+	};
+
+};
+/* -------------------- BOARD INFO -------------------- */
+&bdinfo {
+        board_name = "igx-hmi1";
+};
+
+&eqos {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_eqos>;
+	phy-mode = "rgmii-id";
+	phy-handle = <&ethphy0>;
+	snps,force_thresh_dma_mode;
+	snps,mtl-tx-config = <&mtl_tx_setup>;
+	snps,mtl-rx-config = <&mtl_rx_setup>;
+	status = "okay";
+
+	mdio {
+		compatible = "snps,dwmac-mdio";
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		ethphy0: ethernet-phy@4 {
+			compatible = "ethernet-phy-ieee802.3-c22";
+			reg = <4>;
+			reset-gpios = <&gpio1 11 GPIO_ACTIVE_LOW>;
+			reset-assert-us = <10000>;
+			reset-deassert-us = <1000>;
+			interrupt-parent = <&gpio1>;
+			interrupts = <4 IRQ_TYPE_LEVEL_LOW>;
+			eee-broken-1000t;
+		};
+	};
+
+	mtl_tx_setup: tx-queues-config {
+		snps,tx-queues-to-use = <5>;
+		snps,tx-sched-sp;
+		queue0 {
+			snps,dcb-algorithm;
+			snps,priority = <0x1>;
+		};
+		queue1 {
+			snps,dcb-algorithm;
+			snps,priority = <0x2>;
+		};
+		queue2 {
+			snps,dcb-algorithm;
+			snps,priority = <0x4>;
+		};
+		queue3 {
+			snps,dcb-algorithm;
+			snps,priority = <0x8>;
+		};
+		queue4 {
+			snps,dcb-algorithm;
+			snps,priority = <0xf0>;
+		};
+	};
+	mtl_rx_setup: rx-queues-config {
+		snps,rx-queues-to-use = <5>;
+		snps,rx-sched-sp;
+		queue0 {
+			snps,dcb-algorithm;
+			snps,priority = <0x1>;
+			snps,map-to-dma-channel = <0>;
+		};
+		queue1 {
+			snps,dcb-algorithm;
+			snps,priority = <0x2>;
+			snps,map-to-dma-channel = <1>;
+		};
+		queue2 {
+			snps,dcb-algorithm;
+			snps,priority = <0x4>;
+			snps,map-to-dma-channel = <2>;
+		};
+		queue3 {
+			snps,dcb-algorithm;
+			snps,priority = <0x8>;
+			snps,map-to-dma-channel = <3>;
+		};
+		queue4 {
+			snps,dcb-algorithm;
+			snps,priority = <0xf0>;
+			snps,map-to-dma-channel = <4>;
+		};
+	};
+};
+
+&usb_dwc3_0 {
+	/delete-property/ pinctrl-names;
+	/delete-property/ pinctrl-0;
+};
+
+&ecspi3 {
+	pinctrl-names = "default";
+        pinctrl-0 = <&pinctrl_ecspi3 &pinctrl_ecspi3_cs>;
+	num-cs = <5>;
+	cs-gpios = <&gpio5 25 GPIO_ACTIVE_LOW>,
+                   <&gpio1 15 GPIO_ACTIVE_LOW>,
+                   <&gpio3 0 GPIO_ACTIVE_LOW>,
+                   <&gpio3 1 GPIO_ACTIVE_LOW>,
+                   <&gpio3 14 GPIO_ACTIVE_LOW>;
+	status = "okay";
+	/delete-node/ spidev@0;
+	/*spidev_0@0 {
+		compatible = "linux,spidev";
+		spi-max-frequency = <500000>;
+		reg = <0>;
+		status = "okay";
+		#address-cells = <1>;
+                #size-cells = <1>;
+	};*/
+	gpio_max_0@0 {
+		reg = <0>;
+		compatible = "pisosr-gpio";
+		gpio-controller;
+		#gpio-cells = <2>;
+		spi-max-frequency = <500000>;
+		status = "okay";
+
+		gpio-line-names = "XT11_DIN5", "XT11_DIN6", "", "", "", "", "XT12_DIN7", "XT12_DIN8";
+	};
+	gpio_max_1@1 {
+                compatible = "maxim,max14916";
+                reg = <1>;
+                gpio-controller;
+                #gpio-cells = <2>;
+                spi-max-frequency = <210000>;
+                status = "okay";
+
+                maxim,addressed-mode;
+                maxim,address-bits = <0>;
+
+		gpio-line-names = "XT23_VL12", "XT23_VL11", "XT23_VL10", "XT22_VL09", "XT22_VL08", "XT22_VL07", "XT21_VL06", "XT21_VL05";
+        };
+        gpio_max_2@2 {
+                compatible = "maxim,max14916";
+                reg = <2>;
+                gpio-controller;
+                #gpio-cells = <2>;
+                #address-bits = <1>;
+                spi-max-frequency = <500000>;
+                status = "okay";
+
+                maxim,addressed-mode;
+                maxim,address-bits = <1>;
+
+		gpio-line-names = "XT24_VL13", "XT24_VL14", "XT25_VL15", "XT25_VL16", "XT25_VL17", "XT26_VL18", "XT26_VL19", "XT26_VL20";
+        };
+	dac@3 {
+		status = "okay";
+		compatible = "lltc,ltc2632-l12";
+                reg = <3>;
+                spi-max-frequency = <500000>;
+        };
+	spidev_4@4 {
+                compatible = "linux,spidev";
+                reg = <4>;
+                spi-max-frequency = <500000>;
+                status = "okay";
+                #address-cells = <1>;
+                #size-cells = <1>;
+        };
+
+};
+&i2c4 {
+        clock-frequency = <100000>;
+        pinctrl-names = "default";
+        pinctrl-0 = <&pinctrl_i2c4>;
+        status = "okay";
+
+        pca9670_1: gpio@24 {
+                compatible = "nxp,pca9670";
+                reg = <0x24>;
+                gpio-controller;
+                #gpio-cells = <2>;
+                ngpios = <8>;
+		gpio-line-names = "Ver_PCB_0", "Ver_PCB_1", "Ver_PCB_2", "Ver_Var_0", "Ver_Var_1", "Ver_Rev_0", "Ver_Rev_1", "Ver_Rev_2";
+        };
+
+        pca9670_2: gpio@20 {
+                compatible = "nxp,pca9670";
+                reg = <0x20>;
+                gpio-controller;
+                #gpio-cells = <2>;
+                ngpios = <8>;
+        };
+};
+
+&iomuxc {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_hog>;
+
+	/delete-node/ pinctrl_usb1_pwr;
+	pinctrl_usb1_pwr: usb1grp {
+		fsl,pins = <
+			MX8MP_IOMUXC_GPIO1_IO12__GPIO1_IO12     0x19
+		>;
+	};
+	
+	/delete-node/ pinctrl_hog;
+	pinctrl_hog: hoggrp {
+		fsl,pins = <
+                        /* I2C_B_IRQn */
+                        MX8MP_IOMUXC_GPIO1_IO13__GPIO1_IO13                     0x00144
+                        /* GPIO_J1_7, MIPI_RESET  */
+                        MX8MP_IOMUXC_SPDIF_EXT_CLK__GPIO5_IO05			0x00144
+                        /* BL_ON */
+                        MX8MP_IOMUXC_SPDIF_TX__GPIO5_IO03                       0x00104
+                        /* VLCD_ON */
+                        MX8MP_IOMUXC_SAI3_MCLK__GPIO5_IO02                      0x00104
+                >;
+	};
+
+	/delete-node/ pinctl_ecspi3_cs;
+	pinctl_ecspi3_cs: ecspi3cs {
+		fsl,pins = <
+			MX8MP_IOMUXC_UART2_TXD__GPIO5_IO25		0x40000
+			MX8MP_IOMUXC_GPIO1_IO15__GPIO1_IO15		0x40000
+			MX8MP_IOMUXC_NAND_ALE__GPIO3_IO00		0x40000
+			MX8MP_IOMUXC_NAND_CE0_B__GPIO3_IO01		0x40000
+			MX8MP_IOMUXC_NAND_DQS__GPIO3_IO14		0x40000
+		>;
+	};
+
+	pinctrl_eqos: eqosgrp {
+		fsl,pins = <
+			MX8MP_IOMUXC_ENET_MDC__ENET_QOS_MDC	0x3
+			MX8MP_IOMUXC_ENET_MDIO__ENET_QOS_MDIO	0x3
+			MX8MP_IOMUXC_ENET_RD0__ENET_QOS_RGMII_RD0	0x91
+			MX8MP_IOMUXC_ENET_RD1__ENET_QOS_RGMII_RD1	0x91
+			MX8MP_IOMUXC_ENET_RD2__ENET_QOS_RGMII_RD2	0x91
+			MX8MP_IOMUXC_ENET_RD3__ENET_QOS_RGMII_RD3	0x91
+			MX8MP_IOMUXC_ENET_RXC__CCM_ENET_QOS_CLOCK_GENERATE_RX_CLK	0x91
+			MX8MP_IOMUXC_ENET_RX_CTL__ENET_QOS_RGMII_RX_CTL	0x91
+			MX8MP_IOMUXC_ENET_TD0__ENET_QOS_RGMII_TD0		0x1f
+			MX8MP_IOMUXC_ENET_TD1__ENET_QOS_RGMII_TD1		0x1f
+			MX8MP_IOMUXC_ENET_TD2__ENET_QOS_RGMII_TD2		0x1f
+			MX8MP_IOMUXC_ENET_TD3__ENET_QOS_RGMII_TD3		0x1f
+			MX8MP_IOMUXC_ENET_TX_CTL__ENET_QOS_RGMII_TX_CTL	0x1f
+			MX8MP_IOMUXC_ENET_TXC__CCM_ENET_QOS_CLOCK_GENERATE_TX_CLK	0x1f
+			/* ETH_A_PHY_INTn */
+			MX8MP_IOMUXC_GPIO1_IO04__GPIO1_IO04		0x19
+			/* ETH_A_PHY_RSTn */
+			MX8MP_IOMUXC_GPIO1_IO11__GPIO1_IO11		0x19
+		>;
+	};
+};
+
+&uart1 {
+	fsl,uart-has-rtscts;
+	linux,rs485-enabled-at-boot-time;
+};
+
+&uart3 {
+	fsl,uart-has-rtscts;
+	linux,rs485-enabled-at-boot-time;
+};
