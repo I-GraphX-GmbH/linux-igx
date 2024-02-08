@@ -99,6 +99,7 @@
 			interrupt-parent = <&gpio1>;
 			interrupts = <4 IRQ_TYPE_LEVEL_LOW>;
 			eee-broken-1000t;
+			max-speed = <100>;
 		};
 	};
 
