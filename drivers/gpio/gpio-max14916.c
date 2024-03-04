@@ -153,10 +153,39 @@ static void max14916_set_value(struct gpio_chip *gc, unsigned offset, int val)
 
 				dev_err(chip->gpio_chip.parent, "Fault flags: GloblF: %d, OverLdF: %d, CurrLim: %d, OWOffF: %d, OWOnF: %d, ShrtVDD: %d",
 					globlF, overLdF, currLim, owOffF, owOnF, shrtVDD);
+
+				if (globlF) {
+					dev_err(chip->gpio_chip.parent, "reading/clearing GloblF");
+					memset(txBuffer, 0x0, sizeof(txBuffer));
+					txBuffer[0] = ((0b00001111 & MAX14916_REG_GLOBAL_ERR) << 1) | chip->address_bit_1 << 7 | chip->address_bit_0 << 6 | chip->burst << 5 | 0 << 0;
+					memset(rxBuffer, 0x0, sizeof(rxBuffer));
+					transfer.tx_buf = txBuffer;
+					transfer.rx_buf = rxBuffer;
+					transfer.len = len;
+					int temp = spi_sync_transfer(to_spi_device(chip->gpio_chip.parent), &transfer, 1);
+
+					if(temp) {
+						//error
+						dev_err(chip->gpio_chip.parent, "spi_write_then_read ERROR %d", temp);
+					}
+					else if(rxBuffer[1]) {
+						//error
+						int vint_UV = (rxBuffer[1] & (1 << 0)) > 0;
+						int vA_UVLO = (rxBuffer[1] & (1 << 1)) > 0;
+						int vddNotGood = (rxBuffer[1] & (1 << 2)) > 0;
+						int vddWarn = (rxBuffer[1] & (1 << 3)) > 0;
+						int vddUvlo = (rxBuffer[1] & (1 << 4)) > 0;
+						int thrmShutd = (rxBuffer[1] & (1 << 5)) > 0;
+						int synchErr = (rxBuffer[1] & (1 << 6)) > 0;
+						int wdErr = (rxBuffer[1] & (1 << 7)) > 0;
+						dev_err(chip->gpio_chip.parent, "Global errors: Vint_UV: %d, VA_UVLO: %d, VddNotGood: %d, VddWarn: %d, VddUvlo: %d, ThrmShutd: %d, SynchErr: %d, WDErr: %d",
+							vint_UV, vA_UVLO, vddNotGood, vddWarn, vddUvlo, thrmShutd, synchErr, wdErr);
+					}
+				}
 			}
 			if(rxBuffer[1]) {
 				//channel error
-				for(i = 0; i < sizeof(rxBuffer[1]); i++) {
+				for(i = 0; i < (sizeof(rxBuffer[1]) * 8); i++) {
 					if(rxBuffer[1] & (1 << i)) {
 						dev_err(chip->gpio_chip.parent, "Fault on Channel %d: ", i+1);
 					}
@@ -219,7 +248,7 @@ static int max14916_probe(struct spi_device *spi)
 	//addressed mode
 	if(mode) {
 		if(device_property_present(&spi->dev, MAX14916_DT_PROP_ADDRESS)) {
-			if(abits > 3) {
+			if(device_property_read_u32(&spi->dev, MAX14916_DT_PROP_ADDRESS, &abits) || abits > 3) {
 				return -EINVAL;
 			}
 		}

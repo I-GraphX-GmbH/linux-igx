@@ -165,7 +165,7 @@
 
 &ecspi3 {
 	pinctrl-names = "default";
-        pinctrl-0 = <&pinctrl_ecspi3 &pinctrl_ecspi3_cs>;
+    pinctrl-0 = <&pinctrl_ecspi3 &pinctrl_ecspi3_cs>;
 	num-cs = <5>;
 	cs-gpios = <&gpio5 25 GPIO_ACTIVE_LOW>,
                    <&gpio1 15 GPIO_ACTIVE_LOW>,
@@ -203,28 +203,27 @@
                 maxim,addressed-mode;
                 maxim,address-bits = <0>;
 
-		gpio-line-names = "XT23_VL12", "XT23_VL11", "XT23_VL10", "XT22_VL09", "XT22_VL08", "XT22_VL07", "XT21_VL06", "XT21_VL05";
-        };
-        gpio_max_2@2 {
+				gpio-line-names = "XT23_VL12", "XT23_VL11", "XT23_VL10", "XT22_VL09", "XT22_VL08", "XT22_VL07", "XT21_VL06", "XT21_VL05";
+    };
+    gpio_max_2@2 {
                 compatible = "maxim,max14916";
                 reg = <2>;
                 gpio-controller;
                 #gpio-cells = <2>;
-                #address-bits = <1>;
-                spi-max-frequency = <500000>;
+				spi-max-frequency = <210000>;
                 status = "okay";
 
                 maxim,addressed-mode;
                 maxim,address-bits = <1>;
 
-		gpio-line-names = "XT24_VL13", "XT24_VL14", "XT25_VL15", "XT25_VL16", "XT25_VL17", "XT26_VL18", "XT26_VL19", "XT26_VL20";
-        };
+				gpio-line-names = "XT24_VL13", "XT24_VL14", "XT25_VL15", "XT25_VL16", "XT25_VL17", "XT26_VL18", "XT26_VL19", "XT26_VL20";
+    };
 	dac@3 {
-		status = "okay";
-		compatible = "lltc,ltc2632-l12";
+				status = "okay";
+				compatible = "lltc,ltc2632-l12";
                 reg = <3>;
                 spi-max-frequency = <500000>;
-        };
+    };
 	spidev_4@4 {
                 compatible = "linux,spidev";
                 reg = <4>;
@@ -232,7 +231,7 @@
                 status = "okay";
                 #address-cells = <1>;
                 #size-cells = <1>;
-        };
+    };
 
 };
 &i2c4 {
