@@ -1,0 +1,96 @@
+/*
+ * Copyright (C) 2023 I-GraphX GmbH
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ */
+/ {
+	lvds1_panel {
+		compatible = "panel-lvds";
+		power-supply = <&reg_vlcd>;
+		backlight = <&backlight_ldb>;
+		data-mapping = "vesa-24";
+		label = "r1024-x-A/B";
+		width-mm = <154>;
+		height-mm = <85>;
+		status = "okay";
+
+		panel-timing {
+			clock-frequency = <60000000>;
+			hactive = <1024>;
+			vactive = <600>;
+			hback-porch = <140>;
+			hfront-porch = <160>;
+			hsync-len = <1>;
+			vback-porch = <20>;
+			vfront-porch = <12>;
+			vsync-len = <1>;
+			de-active = <1>;
+			vsync-active = <0>;
+			hsync-active = <0>;
+		};
+
+		port {
+			panel_lvds1_in: endpoint {
+				remote-endpoint = <&lvds1_out>;
+			};
+		};
+	};
+};
+
+&backlight_ldb {
+	pwms = <&pwm2 0 250000 0>;
+	brightness-levels = <0 16 32 48 64 80 96 112 128 144 160 176 192 208 224 240 255>;
+	default-brightness-level = <16>;
+
+	status = "okay";
+};
+
+/* MIPI-DSI */
+&lcdif1 {
+	status = "okay";
+};
+
+/* LVDS */
+&lcdif2 {
+	status = "okay";
+};
+
+/* HDMI */
+&lcdif3 {
+	status = "disbled";
+};
+
+&ldb_phy {
+	status = "okay";
+};
+
+&ldb {
+	status = "okay";
+
+	/* DSI_A */
+	lvds-channel@0 {
+		fsl,data-mapping = "spwg";
+		fsl,data-width = <24>;
+		status = "disabled";
+	};
+
+	/* DSI_B */
+	lvds-channel@1 {
+		fsl,data-mapping = "spwg";
+		fsl,data-width = <24>;
+		status = "okay";
+
+		port@1 {
+			reg = <1>;
+
+			lvds1_out: endpoint {
+				remote-endpoint = <&panel_lvds1_in>;
+			};
+		};
+	};
+};
+&mipi_dsi {
+	status = "okay";
+};

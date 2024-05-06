@@ -15,6 +15,7 @@ subdir-y += exynos
 subdir-y += freescale
 subdir-y += hisilicon
 subdir-y += intel
+subdir-y += IGX
 subdir-y += lg
 subdir-y += marvell
 subdir-y += mediatek
