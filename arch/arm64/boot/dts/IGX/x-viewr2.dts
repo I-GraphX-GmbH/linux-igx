@@ -1,0 +1,22 @@
+#include "x-view.dts"
+
+/ {
+	model = "F&S PicoCoreMX8MPr2";
+};
+
+&reg_wlan_pdn {
+	gpio = <&gpio4 18 GPIO_ACTIVE_HIGH>;
+	/delete-property/ enable-active-high;
+	enable-active-low;
+};
+
+&ethphy0 {
+	rtl821x,clkout-disable; 
+	rtl821x,aldps-enable;   
+	rtl821x,ssc-rxc-enable; 
+	rtl821x,ssc-sysclk-enable;      
+	rtl821x,ssc-clkout-enable;      
+	rtl821x,led-link = <1>; // LED1 for link indication     
+	rtl821x,led-act = <1>;
+	reset-deassert-us = <50000>;
+};
