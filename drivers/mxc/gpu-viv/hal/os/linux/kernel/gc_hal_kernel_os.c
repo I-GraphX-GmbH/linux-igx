@@ -5876,7 +5876,7 @@ OnError:
     return status;
 }
 
-gceSTATUS
+gctBOOL
 _QuerySignal(
     IN gckOS Os,
     IN gctSIGNAL Signal
