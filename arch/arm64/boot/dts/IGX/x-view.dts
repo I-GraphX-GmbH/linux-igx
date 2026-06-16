@@ -224,21 +224,51 @@
                 reg = <3>;
                 spi-max-frequency = <500000>;
     };
-	spidev_4@4 {
-                compatible = "linux,spidev";
+	/*spidev_4@4 {
+                compatible = "microchip,mcp3464";
                 reg = <4>;
                 spi-max-frequency = <500000>;
                 status = "okay";
                 #address-cells = <1>;
                 #size-cells = <1>;
-    };
+    };*/
+	adc@4 {
+				compatible = "microchip,mcp3564r";
+				reg = <4>;
+				spi-max-frequency = <500000>;
+				status = "okay";
+				#address-cells = <1>;
+				#size-cells = <0>;
+				microchip,hw-device-address = <1>;
+
+				/* diff-channels */
+				channel@11 {
+					reg = <11>;
+
+					/* CN0, CN1 */
+					diff-channels = <0 1>;
+					label = "XT62_S2";
+				};
+
+				channel@33 {
+					reg = <33>;
+
+					/* CN1, CN2 */
+					diff-channels = <2 3>;
+					label = "XT61_S1";
+				};
+	};
 
 };
+
 &i2c4 {
         clock-frequency = <100000>;
-        pinctrl-names = "default";
+        pinctrl-names = "default", "gpio";
         pinctrl-0 = <&pinctrl_i2c4>;
+		pinctrl-1 = <&pinctrl_i2c4_gpio>;
         status = "okay";
+		scl-gpios = <&gpio5 20 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
+		sda-gpios = <&gpio5 21 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
 
         pca9670_1: gpio@24 {
                 compatible = "nxp,pca9670";
@@ -246,7 +276,7 @@
                 gpio-controller;
                 #gpio-cells = <2>;
                 ngpios = <8>;
-		gpio-line-names = "Ver_PCB_0", "Ver_PCB_1", "Ver_PCB_2", "Ver_Var_0", "Ver_Var_1", "Ver_Rev_0", "Ver_Rev_1", "Ver_Rev_2";
+				gpio-line-names = "Ver_PCB_0", "Ver_PCB_1", "Ver_PCB_2", "Ver_Var_0", "Ver_Var_1", "Ver_Rev_0", "Ver_Rev_1", "Ver_Rev_2";
         };
 
         pca9670_2: gpio@20 {
@@ -314,6 +344,13 @@
 			MX8MP_IOMUXC_GPIO1_IO04__GPIO1_IO04		0x19
 			/* ETH_A_PHY_RSTn */
 			MX8MP_IOMUXC_GPIO1_IO11__GPIO1_IO11		0x19
+		>;
+	};
+
+	pinctrl_i2c4_gpio: i2c4gpiogrp {
+		fsl,pins = <
+			MX8MP_IOMUXC_I2C4_SCL__GPIO5_IO20		0x400001c3
+			MX8MP_IOMUXC_I2C4_SDA__GPIO5_IO21		0x400001c3
 		>;
 	};
 };
