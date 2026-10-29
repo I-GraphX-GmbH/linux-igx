@@ -394,3 +394,17 @@
 	maximum-speed = "high-speed";
 	status = "okay";
 };
+
+/*
+ * SD_CD pull-ups (R17, R42) are on the switched SD_VDD rail: with vmmc off
+ * the card detect reads "inserted". Keep the rail powered so CD stays valid.
+ */
+&reg_usdhc1_vmmc {
+	regulator-always-on;
+	regulator-boot-on;
+};
+
+/* CMD/DATA0 have 2K4 pull-ups to the 3V3 card rail, no 1.8V signalling */
+&usdhc1 {
+	no-1-8-v;
+};
