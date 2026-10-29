@@ -16,6 +16,7 @@
 #define CONFIG_PICOCOREMX8MP_WLAN_MARVELL_DRV
 
 #define CONFIG_PICOCOREMX8MP_USB_HOST
+#define CONFIG_PICOCOREMX8MP_USB_OTG_PWR
 
 #define CONFIG_PICOCOREMX8MP_EEPROM
 
@@ -353,6 +354,14 @@
 			MX8MP_IOMUXC_I2C4_SDA__GPIO5_IO21		0x400001c3
 		>;
 	};
+
+	/delete-node/ pinctrl_usb2_pwr;
+	pinctrl_usb2_pwr: usb2grp {
+		fsl,pins = <
+			MX8MP_IOMUXC_GPIO1_IO14__GPIO1_IO14		0x19
+		>;
+	};
+
 };
 
 &uart1 {
@@ -363,4 +372,25 @@
 &uart3 {
 	fsl,uart-has-rtscts;
 	linux,rs485-enabled-at-boot-time;
+};
+
+&usb3_1 {
+	status = "okay";
+};
+
+/*
+ * Micro-USB port: USB_OTG_VBUS (J2.51) is not connected and ID goes to the
+ * unusable USB2_ID ball, so device mode cannot work. Lock the port to host.
+ */
+&reg_usb2_otg_vbus {
+	pinctrl-0 = <&pinctrl_usb2_pwr>;
+	gpio = <&gpio1 14 GPIO_ACTIVE_LOW>;
+	/delete-property/ enable-active-high;
+	regulator-always-on;
+};
+
+&usb_dwc3_1 {
+	dr_mode = "host";
+	maximum-speed = "high-speed";
+	status = "okay";
 };
